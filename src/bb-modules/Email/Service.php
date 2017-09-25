@@ -553,7 +553,7 @@ class Service implements \Box\InjectionAwareInterface
         $queue->status = 'sending';
         $this->di['db']->store($queue);
         //@demoVersionLimit
-        if (!$this->di['license']->isPro()) {
+        if ($this->di['license']->isPro()) {
             $queue->content .= PHP_EOL;
             $queue->content .= 'Powered by BoxBilling. Client management, invoicing and support software. http://www.boxbilling.com/';
             $queue->content .= PHP_EOL;

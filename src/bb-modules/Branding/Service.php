@@ -35,7 +35,7 @@ class Service implements \Box\InjectionAwareInterface
 
     public function uninstall()
     {
-        if(!$this->di['license']->isPro()) {
+        if($this->di['license']->isPro()) {
             throw new \Exception('Branding module can only be disabled for PRO license owners', 509);
         }
         return true;
