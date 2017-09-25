@@ -1,0 +1,73 @@
+{% extends request.ajax ? "layout_blank.phtml" : "layout_default.phtml" %}
+{% import "macro_functions.phtml" as mf %}
+{% block meta_title %}{% trans 'Invoices' %}{% endblock %}
+
+{% block content_before %}
+		<!-- Page Heading/Breadcrumbs -->
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">{% trans 'Invoices' %}
+					<small>{% trans 'List of invoices' %}</small>
+				<h1>
+            </div>
+        </div>
+        <!-- /.row -->
+{% endblock %}
+{% block content %}
+
+		<table class="dtt">
+			<thead>
+				<tr>
+					<th>Invoice #</th>
+					<th>Invoice Date</th>
+					<th>Due Date</th>
+					<th>Total</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% set paid_invoices = client.invoice_get_list({}) %}
+				{% for i, invoice in paid_invoices.list %}
+				<tr>
+					<td style="text-align: center">
+					<a href="{{ 'invoice'|link }}/{{ invoice.hash }}">
+					{{ "Invoice #%05s"|format(invoice.id) }}
+					</a>
+					</td>
+					<td>{{ invoice.created_at|date('d-m-Y') }}</td>
+					<td>{{ invoice.due_at|date('d-m-Y') }}</td>
+					<td>{{ invoice.total | money(invoice.currency) }}</td>
+					<td class="text-center">
+					{% if invoice.status == 'paid' %}
+						<span class="label label-success" style="margin:auto">Paid</span>
+					{% endif %}
+					{% if invoice.status == 'unpaid' %}
+						<span class="label label-danger" style="margin:auto">Unpaid</span>
+					{% endif %}
+					{% if invoice.status == 'refunded' %}
+						<span class="label label-info" style="margin:auto">Refunded</span>
+					{% endif %}
+					{% if invoice.status == 'canceled' %}
+						<span class="label label-default" style="margin:auto">Canceled</span>
+					{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		<!-- Service Tabs -->
+        <div class="row">
+            <div class="col-lg-12">
+				<div class="list-group">
+				</div>
+				{% include "partial_pagination.phtml" with {'list': paid_invoices} %}
+            </div>
+        </div>
+		
+		<div class="text-center">
+			<a href="{{ '/client/balance'|link }}" title="{% trans 'Payment history' %}" class="btn btn-success" ><i class="fa fa-archive"></i> {% trans 'Payment history' %}</a>
+		</div>
+
+{% endblock %}
+

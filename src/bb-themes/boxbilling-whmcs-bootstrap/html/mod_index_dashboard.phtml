@@ -1,0 +1,470 @@
+{# Sets blank layout if another page if ajax request or if another page is request as home for non-clients #}
+{% extends request.ajax or (not client and settings.home_page != "menuicons") ? "layout_blank.phtml" : "layout_default.phtml" %}
+{% block meta_title %}{% trans 'Client Area' %}{% endblock %}
+{% import "macro_functions.phtml" as mf %}
+{% set profile = client.client_get %}
+
+{% if not settings.home_sidemenu %}
+	{% if not client %}{% set side_menu = 'hidden' %}{% endif %}
+{% endif %}
+
+{# ------------------------ put your Knowledge Base URL Here ------------------ #}
+{% set kb_site = 'https://wiki.bimasoft.web.id/' %}
+{# ------------------------ put your Knowledge Base URL Here ------------------ #}
+
+{# Content-before #}
+{% block content_before %}
+	{% if client %}
+		<div class="row">
+			<div class="col-lg-12">
+				<h1 class="page-header">Selamat Datang Kembali, {{ profile.first_name }} {{ profile.last_name }} </h1>
+			</div>
+		</div>	
+	{% else %}
+		{% if settings.home_page == "menuicons" %}
+			<div class="row">
+				<div class="col-lg-12">
+					<h1 class="page-header">{% trans 'Home' %}</h1>
+				</div>
+			</div>
+		{% endif %}
+	{% endif %}
+{% endblock %}
+
+{# Content #}
+{% block content %}
+	{% if client %}
+			{% if settings.showcase_enabled %}
+			<div class="jumbotron text-center">
+				<h1>{{ settings.showcase_heading }}</h1>
+				<p>{{ settings.showcase_text }}</p>
+				<a href="{{ settings.showcase_button_url }}" class="btn btn-primary btn-lg">{{ settings.showcase_button_title }}</a>
+			</div>
+			{% endif %}	
+
+			<div class="row client-home-panels">
+				
+				<div class="col-md-12">
+					<div class="tiles clearfix">
+						<div class="row">
+							<div class="col-sm-3 col-xs-6 tile">
+								<a href="{{ '/order/service' | link }}">
+									<div class="icon"><i class="fa fa-cube"></i></div>
+									<div class="stat" id="service-stat">
+									<span style="color:#eee">0</span>
+									</div>
+									<div class="title">Services</div>
+									<div class="highlight bg-color-blue"></div>
+								</a>
+							</div>
+							{% set services = client.order_get_list({"status":"active"}) %}
+							<div id="service-all">
+							{% for i, service in services.list %}
+							<div class="service-list">{{ service.title }}</div>
+							{% endfor %}
+							</div>
+
+							<div class="col-sm-3 col-xs-6 tile">
+								<a href="{{ '/order/service' | link }}">
+									<div class="icon"><i class="fa fa-globe"></i></div>
+									<div class="stat" id="domain-stat"><span style="color:#eee">0</span></div>
+									<div class="title">Domains</div>
+									<div class="highlight bg-color-green"></div>
+								</a>
+							</div>
+							<div class="col-sm-3 col-xs-6 tile">
+								<a href="{{ 'support' }}">
+									<div class="icon"><i class="fa fa-comments"></i></div>
+									<div class="stat">
+									{% set a = client.support_ticket_get_list({"status":'on_hold'}).total %}
+									{% set b = client.support_ticket_get_list({"status":'open'}).total %}
+									{% set c = a + b %}
+									{{ c }}
+									</div>
+									<div class="title">Tickets</div>
+									<div class="highlight bg-color-red"></div>
+								</a>
+							</div>
+							<div class="col-sm-3 col-xs-6 tile">
+								<a href="{{ '/invoice' | link }}">
+									<div class="icon"><i class="fa fa-credit-card"></i></div>
+									<div class="stat">
+										{{ client.invoice_get_list({"status":"unpaid"}).total }}
+									</div>
+									<div class="title">Invoices</div>
+									<div class="highlight bg-color-gold"></div>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-12 home-kb-search">
+					<form method="get" action="{{ kb_site }}" target="search-window">
+						<div class="input-group">
+							<input type="text" name="s" class="form-control input-lg" placeholder="Masukkan pertanyaan disini untuk mendapatkan jawaban dari Knowledge Base...">
+							<i class="fa fa-search"></i>
+						</div>
+					</form>
+				</div>
+
+				<div class="col-md-6">				
+					<div class="row">
+						{% if settings.dash_services %}
+						<div class="col-md-12">
+							<div class="panel panel-default panel-accent-gold">
+								<div class="panel-heading">
+									<h4>
+										<i class="fa fa-cube"></i> Your Active Product/Services
+										{% if client.order_get_list({"expiring":1}).total > 0 %}
+										<span class="label label-primary">{{ client.order_get_list({"expiring":1}).total }} {% trans 'Soon expires' %}</span>
+										{% endif %}
+										<a class="pull-right" href="{{ 'order/service'|link }}">
+											<span class="label bg-color-gold"><i class="fa fa-plus"></i> View All</span>
+										</a>
+									</h4>
+								</div>
+								<div class="list-group text-left service-get-list">
+									{% set services = client.order_get_list({"hide_addons":1, "status":"active"}) %}
+									{% for i, service in services.list %}
+	{% if service.config.domain.owndomain_sld %}
+	    <a href="{{ '/order/service/manage'|link }}/{{service.id}}">{{service.title}}
+	    <span class='domain_tld'>{{ service.config.domain.owndomain_sld }}{{ service.config.domain.owndomain_tld }}</span></a>
+	{% else %}
+	    {% if service.config.domain.register_sld %}
+	        <a href="{{ '/order/service/manage'|link }}/{{service.id}}">{{service.title}}
+	        <span class='domain_tld'>{{ service.config.domain.register_sld }}{{ service.config.domain.register_tld }}</span></a>
+	    {% else %}
+	        {% if service.config.register_sld %}
+	            <a href="{{ '/order/service/manage'|link }}/{{service.id}}">Domain Registration
+	            <span class='domain_tld'>{{ service.config.register_sld }}{{ service.config.register_tld }}</span></a>
+	        {% else %}
+	            <a href="{{ '/order/service/manage'|link }}/{{service.id}}">{{service.title}}</a>
+	        {% endif %}
+	    {% endif %}
+	{% endif %}
+									{% endfor %}
+								</div>
+								<div class="panel-footer"></div>
+							</div>
+						</div>
+						{% endif %}	
+
+						{% if settings.dash_invoices %}
+						<div class="col-md-12">
+							<div class="panel panel-default panel-accent-red">
+								<div class="panel-heading">
+									<h4>
+										<i class="fa fa-credit-card"></i> {% trans 'Invoices' %}
+										{% if client.invoice_get_list({"status":"unpaid"}).total > 0 %}
+										<span class="label label-danger">{{ client.invoice_get_list({"status":"unpaid"}).total }} {% trans 'Unpaid' %}</span>
+										{% endif %}
+										<a class="pull-right" href="{{ 'invoice'|link }}"><span class="label label-danger"><i class="fa fa-plus"></i> View All</span></a>
+									</h4>
+								</div>
+								<div class="list-group list-invoices text-left">
+									{% set unpaid_invoices = client.invoice_get_list({"status":"unpaid", "per_page":10}).list %}
+									{% for i, invoice in unpaid_invoices %}
+									<a href="{{ 'invoice'|link }}/{{ invoice.hash }}" class="list-group-item invoice_list">
+										<strong class="list-group-item-heading">{{ "Invoice #%05s"|format(invoice.id) }}</strong> - {{ invoice.total | money(invoice.currency) }}
+										<p class="list-group-item-text"><small>{% trans 'Due Date' %}: {{ invoice.due_at|date("d/m/Y") }}</small></p>
+									</a>
+									{% endfor %}
+									<div class="panel-footer"></div>
+								</div>
+							</div>
+						</div>
+						{% endif %}	
+						<div class="col-md-12">
+							<div class="panel panel-default panel-accent-grey dash-news">
+								<div class="panel-heading">
+									<h4>
+										<i class="fa fa-newspaper-o"></i> News
+									</h4>
+								</div>
+								<div class="list-group text-center">
+								    {% set posts = guest.news_get_list({"page":request.page,"per_page": 5}) %}
+								    {% for i, post in posts.list %}
+								                    <a href="{{ '/news'|link }}/{{post.slug}}" class="list-group-item">{{post.title}}<br/>
+								    				<span class="date">{{post.updated_at|date('Y-m-d h:i')}}</span></a>
+								    {% endfor %}
+									<div class="panel-footer"></div>
+								</div>
+							</div>
+						</div>
+					</div>					
+				</div>
+
+				<div class="col-md-6">
+					<div class="row">
+						{% if settings.dash_support %}
+						<div class="col-md-12" id="dashboard-support">
+							<div class="panel panel-default panel-accent-blue">
+								<div class="panel-heading">
+									<h4>
+										<i class="fa fa-comments"></i> Recent Support Tickets
+										<a class="pull-right" href="{{ 'support'|link({'ticket' : 1}) }}">
+										<span class="label label-primary"><i class="fa fa-plus"></i> Open New Ticket</span>
+										</a>
+									</h4>
+								</div>
+								<div class="list-group">
+									{% set tickets_on_hold = client.support_ticket_get_list({"status":'on_hold'}) %}
+									
+									{% set j = 0 %}
+
+
+									{% for i, ticket in tickets_on_hold.list %}
+										<a href="{{ 'support/ticket'|link }}/{{ticket.id}}" class="list-group-item">#{{ ticket.id }} - {{ticket.subject}} - {{ticket.helpdesk.name}} <span class="label" style="background: #000">Answered</span><span class='last-updated'>Last Updated : {{ ticket.updated_at|timeago }} {% trans 'ago' %}</span></a>
+
+										{% set j = j + 1 %}
+
+									{% endfor %}
+
+									{% set tickets_open = client.support_ticket_get_list({"status":'open'}) %}
+									{% for i, ticket in tickets_open.list %}
+										<a href="{{ 'support/ticket'|link }}/{{ticket.id}}" class="list-group-item">#{{ ticket.id }} - {{ticket.subject}} - {{ticket.helpdesk.name}} <span class="label label-success">Open</span><span class='last-updated'>Last Updated : {{ ticket.updated_at|timeago }} {% trans 'ago' %}</span></a>
+										{% set j = j + 1 %}
+									{% endfor %}
+
+
+									{% set tickets_closed = client.support_ticket_get_list({"status":'closed'}) %}
+									{% for i, ticket in tickets_closed.list %}
+
+										{% if j<= 4 %}
+										<a href="{{ 'support/ticket'|link }}/{{ticket.id}}" class="list-group-item">#{{ ticket.id }} - {{ticket.subject}} - {{ticket.helpdesk.name}} <span class="label" style="background: #888">{{ mf.status_name(ticket.status) }}</span><span class='last-updated'>Last Updated : {{ ticket.updated_at|timeago }} {% trans 'ago' %}</span></a>
+										{% set j = j + 1 %}
+										{% endif %}
+									{% endfor %}
+								</div>
+								<div class="panel-footer"></div>
+							</div>
+						</div>
+						{% endif %}	
+
+						{% if settings.dash_orders %}
+						<div class="col-md-12">
+							<div class="panel panel-default panel-accent-green">
+								<div class="panel-heading">
+									<h4>
+										<i class="fa fa-fw fa-shopping-cart"></i> {% trans 'Recent orders' %}
+										<a class="pull-right" href="{{ 'order'|link }}"><span class="label label-success"><i class="fa fa-plus"> </i> {% trans 'New order' %}</span></a>
+									</h4>
+								</div>
+								<div class="list-group service-get-list text-left">
+									{% for i, order in client.order_get_list({"per_page":5, "page":request.page, "hide_addons":1}).list %}
+
+	{% if order.config.domain.owndomain_sld %}
+	    <a href="{{ '/order/service/manage'|link }}/{{order.id}}">{{order.title}}
+	    <span class="pull-right label {% if order.status == "active" %}label-success{% elseif order.status == "pending_setup" %}label-warning{% elseif order.status == "failed_setup" %}label-danger{% else %}label-default{% endif %}">{{ mf.status_name(order.status) }}</span>
+	    <span class='domain_tld'>{{ order.config.domain.owndomain_sld }}{{ order.config.domain.owndomain_tld }}</span> </a>
+	{% else %}
+	    {% if order.config.domain.register_sld %}
+	        <a href="{{ '/order/service/manage'|link }}/{{order.id}}">{{order.title}}
+	        <span class="pull-right label {% if order.status == "active" %}label-success{% elseif order.status == "pending_setup" %}label-warning{% elseif order.status == "failed_setup" %}label-danger{% else %}label-default{% endif %}">{{ mf.status_name(order.status) }}</span><span class='domain_tld'>{{ order.config.domain.register_sld }}{{ order.config.domain.register_tld }}</span></a>
+	    {% else %}
+	        {% if order.config.register_sld %}
+	            <a href="{{ '/order/service/manage'|link }}/{{order.id}}">Domain Registration
+	            <span class="pull-right label {% if order.status == "active" %}label-success{% elseif order.status == "pending_setup" %}label-warning{% elseif order.status == "failed_setup" %}label-danger{% else %}label-default{% endif %}">{{ mf.status_name(order.status) }}</span><span class='domain_tld'>{{ order.config.register_sld }}{{ order.config.register_tld }}</span></a>
+	        {% else %}
+	            <a href="{{ '/order/service/manage'|link }}/{{order.id}}">{{order.title}}<span class="pull-right label {% if order.status == "active" %}label-success{% elseif order.status == "pending_setup" %}label-warning{% elseif order.status == "failed_setup" %}label-danger{% else %}label-default{% endif %}">{{ mf.status_name(order.status) }}</span></a>
+	        {% endif %}
+	    {% endif %}
+	{% endif %}
+
+
+
+									{% endfor %}
+								</div>
+								<div class="panel-footer"></div>
+							</div>
+						</div>
+						{% endif %}	
+
+					</div>
+				</div>
+				
+
+				{% if settings.dash_new and guest.extension_is_on({"mod":'news'}) %}
+				<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h4>
+								<i class="fa fa-fw fa-bullhorn"></i> {% trans 'News & Announcements' %}
+								<a class="btn btn-default btn-xs pull-right" href="{{ 'news'|link }}">{% trans 'Blog' %}</a>
+							</h4>
+						</div>
+						<div class="list-group">
+							{% set posts = guest.news_get_list({"per_page": 4, "page" : 1}) %}
+							{% for i, post in posts.list %}
+								<a href="{{ '/news'|link }}/{{post.slug}}" class="list-group-item">{{post.title}}</a>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+				{% endif %}
+					
+				{% if settings.dash_forum and guest.extension_is_on({"mod":'forum'}) %}
+					{% if client.forum_favorites %}
+					<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h4>
+								<i class="fa fa-fw fa-comments"></i> {% trans 'Favorite topics' %}
+								<a class="btn btn-default btn-xs pull-right" href="{{ 'forum'|link }}">{% trans 'Forum' %}</a>
+							</h4>
+						</div>
+						<div class="list-group">
+							{% for i, topic in client.forum_favorites %}
+							<a href="{{ '/forum'|link }}/{{topic.forum.slug}}/{{topic.slug}}#m-{{ topic.last.id }}" class="list-group-item">
+								<h4 class="list-group-item-heading">{{topic.title}}</h4>
+								<p class="list-group-item-text">
+									<i>{% trans 'Last post' %}:</i> <img src="{{ topic.last.author.email|gravatar }}?size=15" alt="{{ topic.last.author.name }}"> {{ topic.last.author.name }} <strong>{{ topic.last.created_at|date('Y-m-d h:i') }}</strong>
+								</p>
+							</a>
+							{% endfor %}
+						</div>
+					</div>
+					</div>
+					{% endif %}
+				{% endif %}	
+			</div>
+	{% else %}
+		{% if settings.home_page == "menuicons" %}
+			{% if settings.showcase_enabled %}
+			<div class="jumbotron text-center">
+				<h1>{{ settings.showcase_heading }}</h1>
+				<p>{{ settings.showcase_text }}</p>
+				<a href="{{ settings.showcase_button_url }}" class="btn btn-primary btn-lg">{{ settings.showcase_button_title }}</a>
+			</div>
+			{% endif %}	
+		
+			<div class="row">
+				<div class="col-md-4 col-sm-6">
+					<div class="panel panel-default text-center">
+						<div class="panel-heading">
+							<span class="fa-stack fa-5x">
+								  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+								  <i class="fa fa-shopping-cart fa-stack-1x fa-inverse"></i>
+							</span>
+						</div>
+						<div class="panel-body">
+							<h4><a href="{{ '/order'|link }}">{% trans 'Order' %}</a></h4>
+							<p>{% trans 'Choose products we offer for selling' %}</p>
+						</div>
+					</div>
+				</div>
+				
+				<div class="col-md-4 col-sm-6">
+					<div class="panel panel-default text-center">
+						<div class="panel-heading">
+							<span class="fa-stack fa-5x">
+								  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+								  <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+							</span>
+						</div>
+						<div class="panel-body">
+							<h4><a href="{{ '/login'|link({'register' : 1}) }}">{% trans 'Register' %}</a></h4>
+							<p>{% trans 'Become a member and manage services' %}</p>
+						</div>
+					</div>
+				</div>
+				
+				<div class="col-md-4 col-sm-6">
+					<div class="panel panel-default text-center">
+						<div class="panel-heading">
+							<span class="fa-stack fa-5x">
+								  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+								  <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+							</span>
+						</div>
+						<div class="panel-body">
+							<h4><a href="{{ '/support/contact-us'|link }}">{% trans 'Contact Us' %}</a></h4>
+							<p>{{ company.signature }}</p>
+						</div>
+					</div>
+				</div>
+
+				{% if guest.extension_is_on({"mod":"news"}) %}
+				<div class="col-md-4 col-sm-6">
+					<div class="panel panel-default text-center">
+						<div class="panel-heading">
+							<span class="fa-stack fa-5x">
+								  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+								  <i class="fa fa-bullhorn fa-stack-1x fa-inverse"></i>
+							</span>
+						</div>
+						<div class="panel-body">
+							<h4><a href="{{ '/news'|link }}">{% trans 'Announcements' %}</a></h4>
+							<p>{% trans 'Track our latest posts' %}</p>
+						</div>
+					</div>
+				</div>
+				{% endif %}
+
+				{% if guest.extension_is_on({"mod":"kb"}) %}
+				<div class="col-md-4 col-sm-6">
+					<div class="panel panel-default text-center">
+						<div class="panel-heading">
+							<span class="fa-stack fa-5x">
+								  <i class="fa fa-circle fa-stack-2x text-primary"></i>
+								  <i class="fa fa-graduation-cap fa-stack-1x fa-inverse"></i>
+							</span>
+						</div>
+						<div class="panel-body">
+							<h4><a href="{{ '/kb'|link }}">{% trans 'Knowledge Base' %}</a></h4>
+							<p>{% trans 'Browse our KB for answers and FAQs' %}</p>
+						</div>
+					</div>
+				</div>
+				{% endif %}
+			</div>
+		{% elseif settings.home_page == "order" %}
+			{% include "mod_order_index.phtml" %}
+		{% elseif settings.home_page == "blog" %}
+			{% include "mod_news_index.phtml" %}
+		{% elseif settings.home_page == "login" %}
+			{% include "mod_page_login.phtml" %}
+		{% elseif settings.home_page == "contact" %}
+			{% include "mod_support_contact_us.phtml" %}
+		{% elseif settings.home_page == "kb" %}
+			{% include "mod_kb_index.phtml" %}
+		{% endif %}
+
+	{% endif %}
+	<script>
+		jQuery(document).ready(function($) {
+			var service_count = 0;
+			var domain_count = 0;
+			$('.service-list').each(function(index, el) {
+				s = $(this).text();
+				if ( s.indexOf('Domain')>=0 ) {
+					domain_count++;
+				} else {
+					service_count++;
+				}
+			});
+
+			$('#service-stat').html(service_count);
+			$('#domain-stat').html(domain_count);
+
+			$('.service-get-list a').each(function(index, el) {
+			    str = $(this).html();
+			    if (str) {
+			        if ( str.indexOf('for') > 0 ) {
+			            start = str.indexOf('for');
+			            end = str.indexOf('span');
+			            console.log(end);
+			            a = str.substring (0,start);
+			            b = str.substring (end-1);
+			            $(this).html(a + b);
+			        }
+			    }
+			    str = null;
+			});
+
+		});
+
+
+	</script>
+{% endblock %}
