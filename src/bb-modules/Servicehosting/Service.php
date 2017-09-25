@@ -260,7 +260,7 @@ class Service implements InjectionAwareInterface
             throw new \Box_Exception('Account password is missing or is not valid');
         }
 
-        $u = strtolower($data['username']);
+        $u = $data['username'];
 
         if($this->_performOnService($order)){
             list($adapter, $account) = $this->_getAM($model);
