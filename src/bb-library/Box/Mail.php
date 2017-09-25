@@ -123,11 +123,11 @@ class Box_Mail
         
         if($user) {
             $mail->SMTPAuth     = true;
-            $mail->SMTPSecure     = $security;
+            $mail->SMTPSecure   = $security;
             $mail->Username     = $user;
             $mail->Password     = $pass;
         }
-            
+
         $mail->SetFrom($this->_from, $this->_from_name);
         $mail->AddReplyTo($this->_from);
         $mail->AddAddress($this->_to);
@@ -140,6 +140,7 @@ class Box_Mail
     protected function _sendMail()
     {
         try {
+            /*
             $mail = new PHPMailer(true);
             $mail->CharSet = 'utf-8';
             $mail->AddReplyTo($this->_from, $this->_from_name);
@@ -149,6 +150,45 @@ class Box_Mail
             $mail->AltBody    = "To view the message, please use an HTML compatible email viewer!"; // optional, comment out and test
             $mail->MsgHTML($this->_bodyHtml);
             $mail->Send();
+            */
+
+            /*
+              ------------------- MAIL GUN -----------------------
+            */
+
+              $api_key = 'key-123456123456123456123456';
+              $mailgun_domain = 'example.com'
+
+            /*
+              ----------------------------------------------------
+            */
+
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            $plain = "To view the message, please use an HTML compatible email viewer!";
+
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_URL, 'https://api:'.$api_key.'@api.mailgun.net/v3/'.$mailgun_domain.'/messages');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, array('from' => $this->_from,
+                  'to' => $this->_to,
+                  'subject' => $this->_subject,
+                  'html' => $this->_bodyHtml,
+                  'text' => $plain));
+
+            $j = json_decode(curl_exec($ch));
+
+            $info = curl_getinfo($ch);
+
+            if($info['http_code'] != 200)
+                  error("Fel 313: Vänligen meddela detta via E-post till support@bimasoft.web.id");
+
+            curl_close($ch);
+
+            return $j;
+
         } catch(Exception $e) {
             error_log($e->getMessage());
 
