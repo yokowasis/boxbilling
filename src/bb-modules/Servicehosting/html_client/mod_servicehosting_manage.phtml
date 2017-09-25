@@ -7,8 +7,6 @@
                 <ul class="data-header-actions">
                     <li class="domain-tabs active"><a href="#tab-details" class="btn btn-inverse btn-alt">{% trans 'Details' %}</a></li>
                     <li class="domain-tabs"><a href="#tab-change-pass" class="btn btn-inverse btn-alt">{% trans 'Password' %}</a></li>
-                    <li class="domain-tabs"><a href="#tab-change-domain" class="btn btn-inverse btn-alt">{% trans 'Domain' %}</a></li>
-                    <li class="domain-tabs"><a href="#tab-change-username" class="btn btn-inverse btn-alt">{% trans 'Username' %}</a></li>
                 </ul>
             </header>
             <section class="tab-content">
@@ -91,51 +89,10 @@
                                 </div>
 
                                 <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <p>&nbsp;</p>
                                 <div class="control-group">
                                     <div class="controls">
                                         <button class="btn btn-primary" type="submit" value="{% trans 'Change password' %}">{% trans 'Change password' %}</button>
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </form>
-                </div>
-
-                <div class="tab-pane" id="tab-change-domain">
-                    <h3>{% trans 'Change domain' %}</h3>
-                        <form action="" method="post" id="change-domain" class="form-horizontal">
-                            <fieldset>
-                                <div class="control-group">
-                                    <label class="control-label" >{% trans 'New domain' %}: </label>
-                                    <div class="controls">
-                                        <input type="text" name="sld" value="{{ request.domain|default(service.sld) }}" required="required" class="span2">
-                                        <input type="text" name="tld" value="{{ request.domain|default(service.tld) }}" required="required" class="span1">
-                                    </div>
-                                </div>
-                                <input type="hidden" name="order_id" value="{{ order.id }}">
-                                <div class="control-group">
-                                    <div class="controls">
-                                        <button class="btn btn-primary" type="submit" value="{% trans 'Change domain' %}">{% trans 'Change domain' %}</button>
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </form>
-                </div>
-
-                <div class="tab-pane" id="tab-change-username">
-                    <h3>{% trans 'Change username' %}</h3>
-                        <form action="" method="post" id="change-username" class="form-horizontal">
-                            <fieldset>
-                            <div class="control-group">
-                                <label class="control-label" >{% trans 'Username' %}: </label>
-                                <div class="controls">
-                                    <input type="text" name="username" value="{{ request.username|default(service.username) }}" required="required">
-                                </div>
-                            </div>
-
-                                <input type="hidden" name="order_id" value="{{ order.id }}">
-                                <div class="control-group">
-                                    <div class="controls">
-                                        <button class="btn btn-primary" type="submit" value="{% trans 'Change username' %}">{% trans 'Change username' %}</button>
                                     </div>
                                 </div>
                             </fieldset>
