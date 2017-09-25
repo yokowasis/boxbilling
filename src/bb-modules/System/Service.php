@@ -1521,7 +1521,7 @@ class Service
      */
     public function checkLimits($model, $limit = 2)
     {
-        if (!$this->di['license']->isPro()) {
+        if ($this->di['license']->isPro()) {
             $model = str_replace('Model_', '', $model);
             $count = count($this->di['db']->find($model));
 

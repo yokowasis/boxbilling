@@ -30,7 +30,7 @@ class Service implements \Box\InjectionAwareInterface
     
     public function install()
     {
-        if(!$this->di['license']->isPro()) {
+        if($this->di['license']->isPro()) {
             throw new \Exception('This extension can only be enabled by PRO license owners', 509);
         }
         

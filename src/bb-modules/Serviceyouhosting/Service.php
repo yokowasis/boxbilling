@@ -514,7 +514,7 @@ class Service implements \Box\InjectionAwareInterface
 
     public function getApi()
     {
-        if (!$this->di['license']->isPro()) {
+        if ($this->di['license']->isPro()) {
             throw new \Exception('YouHosting module can only be used by PRO license owners. Get PRO license key at http://www.boxbilling.com/order', 509);
         }
 
