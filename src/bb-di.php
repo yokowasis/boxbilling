@@ -165,6 +165,7 @@ $di['twig'] = function () use ($di) {
 
 $di['is_client_logged'] = function() use($di) {
     if(!$di['auth']->isClientLoggedIn()) {
+        header('Location: https://client.bimasoft.web.id/index.php?_url=/login');        
         throw new Exception('Client is not logged in');
     }
     return true;
