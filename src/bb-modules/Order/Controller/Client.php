@@ -83,6 +83,7 @@ class Client implements \Box\InjectionAwareInterface
             'id'    =>  $id,
         );
         $order = $api->order_get($data);
+        include ('bb-modules/Customorder/Service.php');
         return $app->render('mod_order_manage', array('order'=>$order));
     }
 
