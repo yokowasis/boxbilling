@@ -1237,8 +1237,6 @@ class Service implements InjectionAwareInterface
 
         $company_info = __("Name: ") . $invoice['seller']['company'] . "\n" .
             __("Address: ") . $invoice['seller']['address'] . "\n" .
-            __("Company VAT: ") . $invoice['seller']['company_vat'] . "\n" .
-            __("Company number: ") . $invoice['seller']['company_number'] . "\n" .
             __("Account: ") . $invoice['seller']['account_number'] . "\n" .
             __("Phone: ") . $invoice['seller']['phone'] . "\n" .
             __("Email: ") . $invoice['seller']['email'];
@@ -1251,8 +1249,6 @@ class Service implements InjectionAwareInterface
         $buyer_info = __("Name: ") . $invoice['buyer']['first_name'].' ' . $invoice['buyer']['last_name'] . "\n" .
             __("Company: ") . $invoice['buyer']['company'] . "\n" .
             __("Address: ") . $invoice['buyer']['address'] . "\n" .
-            __("Company VAT: ") . $invoice['seller']['company_vat'] . "\n" .
-            __("Company number: ") . $invoice['seller']['company_number'] . "\n" .
             __("Phone: ") . $invoice['buyer']['phone'];
         $pdf->SetFont('DejaVu', 'B', $font_size);
         $pdf->text(145, 75, __("Billing and delivery address"));
